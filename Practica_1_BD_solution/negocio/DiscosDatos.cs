@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using dominio;
+using System.Xml.Linq;
 
 namespace negocio
 {
@@ -142,7 +143,107 @@ namespace negocio
             }
         }
 
-        
-  
+        public List<Disco> filtrar(string campo, string criterio, string filtro)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            List<Disco> lista = new List<Disco>();
+
+            try
+            {
+                string consulta = "select Titulo, FechaLanzamiento, CantidadCanciones, UrlImagenTapa, E.Descripcion Estilo, ED.Descripcion TipoEdicion, D.IdEstilo, D.IdTipoEdicion, D.Id from DISCOS D, ESTILOS E, TIPOSEDICION ED where E.Id = D.IdEstilo and ED.Id = D.IdTipoEdicion and D.Activo = 1 and ";
+
+                if (campo == "Título")
+                {
+                    switch (criterio)
+                    {
+                        case "Comienza con":
+                            consulta += "Titulo like '" + filtro + "%'";
+                            break;
+                        case "Termina con":
+                            consulta += "Titulo like  '%" + filtro + "'";
+                            break;
+                        default:
+                            consulta += "Titulo like '%" + filtro + "%'";
+                            break;
+                    }
+                }
+                else if (campo == "CantCanciones")
+                {
+                    switch (criterio)
+                    {
+                        case "Mayor a":
+                            consulta += "CantidadCanciones > " + filtro;
+                            break;
+                        case "Menor a":
+                            consulta += "CantidadCanciones < " + filtro;
+                            break;
+                        default:
+                            consulta += "CantidadCanciones = " + filtro;
+                            break;
+                    }
+                }
+                else if (campo == "Estilo") 
+                {
+                    switch (criterio)
+                    {
+                        case "Comienza con":
+                            consulta += "E.Descripcion  like '" + filtro + "%' ";
+                            break;
+                        case "Termina con":
+                            consulta += "E.Descripcion  like '%" + filtro + "'";
+                            break;
+                        default:
+                            consulta += "E.Descripcion  like '%" + filtro + "%'";
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (criterio)
+                    {
+                        case "Comienza con":
+                            consulta += "ED.Descripcion  like '" + filtro + "%' ";
+                            break;
+                        case "Termina con":
+                            consulta += "ED.Descripcion  like '%" + filtro + "'";
+                            break;
+                        default:
+                            consulta += "ED.Descripcion  like '%" + filtro + "%'";
+                            break;
+                    }
+                }
+
+                datos.setearConsulta(consulta);
+                datos.ejecutarLectura();
+                while (datos.Lector.Read())
+                {
+                    Disco aux = new Disco();
+                    aux.Id = (int)datos.Lector["Id"];
+                    aux.Titulo = (string)datos.Lector["Titulo"];
+                    aux.FechaLanzamiento = (DateTime)datos.Lector["FechaLanzamiento"];
+                    aux.CantCanciones = datos.Lector.GetInt32(2);
+
+                    if (!(datos.Lector["UrlImagenTapa"] is DBNull))
+                        aux.UrlImagen = (string)datos.Lector["UrlImagenTapa"];
+
+                    aux.Style = new Estilo();
+                    aux.Style.Id = (int)datos.Lector["IdEstilo"];
+                    aux.Style.Descripcion = (string)datos.Lector["Estilo"];
+
+                    aux.TipoEdicion = new Edicion();
+                    aux.TipoEdicion.Id = (int)datos.Lector["IdTipoEdicion"];
+                    aux.TipoEdicion.Descripcion = (string)datos.Lector["TipoEdicion"];
+
+                    lista.Add(aux);
+                }
+
+                return lista;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
     }
 }

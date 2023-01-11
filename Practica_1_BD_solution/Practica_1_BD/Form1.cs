@@ -24,12 +24,20 @@ namespace Practica_1_BD
         private void FormDiscos_Load(object sender, EventArgs e)
         {
             cargar();
+            cboBoxCampo.Items.Add("Título");
+            cboBoxCampo.Items.Add("CantCanciones");
+            cboBoxCampo.Items.Add("Estilo");
+            cboBoxCampo.Items.Add("Edición");
         }
 
         private void dgvDiscos_SelectionChanged(object sender, EventArgs e)
         {
-            Disco seleccionado = (Disco)dgvDiscos.CurrentRow.DataBoundItem;
-            cargarImagen(seleccionado.UrlImagen);
+            if(dgvDiscos.CurrentRow != null)
+            {
+                Disco seleccionado = (Disco)dgvDiscos.CurrentRow.DataBoundItem;
+                cargarImagen(seleccionado.UrlImagen);
+            }
+
         }
 
         private void cargarImagen(string imagen)
@@ -54,19 +62,23 @@ namespace Practica_1_BD
             {
                 listaDisco = datos.listar();
                 dgvDiscos.DataSource = listaDisco;
-                dgvDiscos.Columns["UrlImagen"].Visible = false;
-                dgvDiscos.Columns["Id"].Visible = false;
+                ocultarColumnas();
                 cargarImagen(listaDisco[0].UrlImagen);
 
-                listaEstilo = datosEstilos.listar();
-                dgvEstilos.DataSource = listaEstilo;
-                dgvEstilos.Columns["Id"].Visible = false;
+                //listaEstilo = datosEstilos.listar();
+                //dgvEstilos.DataSource = listaEstilo;
+                //dgvEstilos.Columns["Id"].Visible = false;
             }
             catch (Exception ex)
             {
 
                 MessageBox.Show(ex.ToString());
             }
+        }
+        private void ocultarColumnas()
+        {
+            dgvDiscos.Columns["UrlImagen"].Visible = false;
+            dgvDiscos.Columns["Id"].Visible = false;
         }
 
         private void btnAgregar_Click(object sender, EventArgs e)
@@ -124,5 +136,58 @@ namespace Practica_1_BD
                 throw ex;
             }
         }
+
+        private void btnBuscar_Click(object sender, EventArgs e)
+        {
+            DiscosDatos negocio = new DiscosDatos();
+            try
+            {
+                string campo = cboBoxCampo.SelectedItem.ToString();
+                string criterio = cboBoxCriterio.SelectedItem.ToString();
+                string filtro = txtFiltroAvanzado.Text;
+                dgvDiscos.DataSource = negocio.filtrar(campo, criterio, filtro);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void txtFiltrar_TextChanged(object sender, EventArgs e)
+        {
+            List<Disco> lista_filtrada;
+            string filtro = txtFiltrar.Text;
+
+            if (filtro.Length >= 3)
+                lista_filtrada = listaDisco.FindAll(x => x.Titulo.ToUpper().Contains(txtFiltrar.Text.ToUpper()) || x.Style.Descripcion.ToUpper().Contains(txtFiltrar.Text.ToUpper()));
+            else
+                lista_filtrada = listaDisco;
+
+            dgvDiscos.DataSource = null; // Primero se pisa para que el dgv quede sin ningun disco cargado.
+            dgvDiscos.DataSource = lista_filtrada;
+            ocultarColumnas();
+        }
+
+        private void cboBoxCampo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string opcion = cboBoxCampo.SelectedItem.ToString();
+
+            if(opcion == "CantCanciones")
+            {
+                cboBoxCriterio.Items.Clear();
+                cboBoxCriterio.Items.Add("Mayor a");
+                cboBoxCriterio.Items.Add("Menor a");
+                cboBoxCriterio.Items.Add("Igual a");
+            }
+            else
+            {
+                cboBoxCriterio.Items.Clear();
+                cboBoxCriterio.Items.Add("Comienza con");
+                cboBoxCriterio.Items.Add("Termina con");
+                cboBoxCriterio.Items.Add("Contiene");
+            }
+        }
+        }
     }
-}
+

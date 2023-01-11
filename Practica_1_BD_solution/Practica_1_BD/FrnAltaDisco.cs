@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using dominio;
 using negocio;
+using System.Configuration;
 
 namespace Practica_1_BD
 {
     public partial class FrnAltaDisco : Form
     {
         private Disco disco = null;
+        private OpenFileDialog archivo = null;
         public FrnAltaDisco()
         {
             InitializeComponent();
@@ -57,6 +60,10 @@ namespace Practica_1_BD
                     diskDatos.Agregar(disco);
                     MessageBox.Show("Agregado exitosamente");
                 }
+
+                // Guardo imagen si la levantó localmente: 
+                if(archivo != null && !(txtUrlImagen.Text.ToUpper().Contains("HTTP")))
+                    File.Copy(archivo.FileName, ConfigurationManager.AppSettings["Discografias_app"] + archivo.SafeFileName);
 
                 Close();
             }
@@ -115,6 +122,20 @@ namespace Practica_1_BD
         private void txtUrlImagen_Leave(object sender, EventArgs e)
         {
             cargarImagen(txtUrlImagen.Text);
+        }
+
+        private void btnAgregarImg_Click(object sender, EventArgs e)
+        {
+            archivo = new OpenFileDialog();
+            archivo.Filter = "jpg|*.jpg;|png|*.png";
+            if(archivo.ShowDialog() == DialogResult.OK)
+            {
+                txtUrlImagen.Text += archivo.FileName;
+                cargarImagen(archivo.FileName);
+            }
+
+            // Guardo la imagen:
+            // File.Copy(archivo.FileName, ConfigurationManager.AppSettings["Discografias_app"] + archivo.SafeFileName);
         }
     }
 }
