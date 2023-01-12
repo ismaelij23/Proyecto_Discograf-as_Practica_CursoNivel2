@@ -136,12 +136,53 @@ namespace Practica_1_BD
                 throw ex;
             }
         }
+        private bool validarFiltro()
+        {
+            if (cboBoxCampo.SelectedIndex < 0)
+            {
+                MessageBox.Show("Por favor, seleccione el campo para filtrar.");
+                return true;
+            }
+            if (cboBoxCriterio.SelectedIndex < 0)
+            {
+                MessageBox.Show("Por favor, seleccione el criterio para filtrar.");
+                return true;
+            }
+            if (cboBoxCampo.SelectedItem.ToString() == "CantCanciones")
+            {
+                if (string.IsNullOrEmpty(txtFiltroAvanzado.Text))
+                {
+                    MessageBox.Show("Debes cargar el filtro para numéricos...");
+                    return true;
+                }
+                if (!(soloNumeros(txtFiltroAvanzado.Text)))
+                {
+                    MessageBox.Show("Solo nros para filtrar por un campo numérico...");
+                    return true;
+                }
 
+            }
+
+            return false;
+        }
+
+        private bool soloNumeros(string cadena)
+        {
+            foreach (char caracter in cadena)
+            {
+                if (!(char.IsNumber(caracter)))
+                    return false;
+            }
+            return true;
+        }
         private void btnBuscar_Click(object sender, EventArgs e)
         {
             DiscosDatos negocio = new DiscosDatos();
             try
             {
+                if (validarFiltro())
+                    return;
+
                 string campo = cboBoxCampo.SelectedItem.ToString();
                 string criterio = cboBoxCriterio.SelectedItem.ToString();
                 string filtro = txtFiltroAvanzado.Text;
